@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye } from "lucide-react";
 import Button from "../../components/ui/Button";
@@ -28,8 +28,18 @@ const OrdersList = () => {
   const total = data?.pagination?.total ?? 0;
   const totalPages = data?.pagination?.pages ?? 1;
 
+  type ApiOrder = {
+    id: string;
+    orderId?: string;
+    customer?: string;
+    customerEmail?: string;
+    date: string;
+    total: number;
+    status: string;
+  };
+
   const orders = useMemo(() => {
-    return (data?.orders || []).map((order) => ({
+    return (data?.orders || []).map((order: ApiOrder) => ({
       _id: order.id,
       orderId: order.orderId,
       customer: order.customer,
@@ -44,7 +54,7 @@ const OrdersList = () => {
   const currentPage = Math.min(page, totalPages);
   const pagedOrders = filteredOrders;
 
-  const getStatusVariant = (status) => {
+  const getStatusVariant = (status: string) => {
     switch (status) {
       case "delivered":
         return "success";
@@ -74,8 +84,8 @@ const OrdersList = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Select
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
+            onChange={(event: ChangeEvent<HTMLSelectElement>) => {
+              setStatusFilter(event.target.value);
               setPage(1);
             }}
             options={[
@@ -141,11 +151,11 @@ const OrdersList = () => {
                       <div className="flex items-center gap-2">
                         <Select
                           value={order.status}
-                          onChange={async (e) => {
+                          onChange={async (event: ChangeEvent<HTMLSelectElement>) => {
                             try {
                               await updateOrderStatus({
                                 orderId: order._id,
-                                status: e.target.value,
+                                status: event.target.value,
                               }).unwrap();
                               toast.success("Status updated");
                               refetch();

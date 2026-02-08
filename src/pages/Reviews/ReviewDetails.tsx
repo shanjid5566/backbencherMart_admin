@@ -180,7 +180,7 @@ const ReviewDetails = () => {
               </thead>
               <tbody>
                 {reviews.length > 0 ? (
-                  reviews.map((review) => (
+                  reviews.map((review: (typeof reviews)[number]) => (
                     <tr key={review._id} className="table-row">
                       <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                         {review.userEmail || review.userName}

@@ -34,8 +34,16 @@ const FAQDetails = () => {
     refetch: refetchFaqs,
   } = useGetFaqsQuery(productId ?? skipToken);
 
-  const faqs = useMemo(() => {
-    return (faqsData?.items || []).map((faq) => ({
+  type ApiFaq = {
+    _id: string;
+    productId: string;
+    question: string;
+    answer: string;
+    createdAt: string;
+  };
+
+  const faqs = useMemo<FAQ[]>(() => {
+    return (faqsData?.items || []).map((faq: ApiFaq) => ({
       _id: faq._id,
       productId: faq.productId,
       question: faq.question,

@@ -38,14 +38,28 @@ const Analytics = () => {
   const { data: metricsData, isLoading: isMetricsLoading } =
     useGetBusinessMetricsQuery(undefined);
 
+  type RevenueItem = {
+    month: string;
+    year: number;
+    revenue: number;
+    orders: number;
+  };
+
+  type CategoryItem = {
+    category: string;
+    revenue: number;
+    items: number;
+    percentage: number;
+  };
+
   const monthlyRevenueChart = useMemo(() => {
-    const items = revenueData?.data || [];
+    const items: RevenueItem[] = revenueData?.data || [];
     return {
-      labels: items.map((item) => `${item.month} ${item.year}`),
+      labels: items.map((item: RevenueItem) => `${item.month} ${item.year}`),
       datasets: [
         {
           label: "Revenue",
-          data: items.map((item) => item.revenue),
+          data: items.map((item: RevenueItem) => item.revenue),
           backgroundColor: "rgba(59, 130, 246, 0.8)",
         },
       ],
@@ -61,15 +75,15 @@ const Analytics = () => {
       "rgba(139, 92, 246, 0.8)",
       "rgba(14, 116, 144, 0.8)",
     ];
-    const items = categoryData?.data || [];
+    const items: CategoryItem[] = categoryData?.data || [];
     return {
-      labels: items.map((item) => item.category),
+      labels: items.map((item: CategoryItem) => item.category),
       datasets: [
         {
           label: "Sales by Category",
-          data: items.map((item) => item.revenue),
+          data: items.map((item: CategoryItem) => item.revenue),
           backgroundColor: items.map(
-            (_, index) => palette[index % palette.length],
+            (_: CategoryItem, index: number) => palette[index % palette.length],
           ),
         },
       ],

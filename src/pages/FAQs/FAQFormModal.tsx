@@ -120,7 +120,7 @@ const FAQFormModal = ({
         />
 
         <div className="flex gap-3 justify-end pt-4">
-          <Button type="button" variant="outline" onClick={handleClose}>
+          <Button type="button" variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
           <Button type="submit" isLoading={isSaving}>

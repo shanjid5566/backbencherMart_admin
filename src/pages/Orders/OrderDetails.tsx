@@ -5,13 +5,34 @@ import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 const OrderDetails = () => {
   const { id } = useParams();
   const [newStatus, setNewStatus] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
-  const [order, setOrder] = useState({
+  const [order, setOrder] = useState<{
+    _id: string;
+    user: string | { email: string };
+    createdAt: string;
+    status: string;
+    items: {
+      product: string | { name: string };
+      quantity: number;
+      price: number;
+    }[];
+    shippingAddress: {
+      street: string;
+      city: string;
+      state: string;
+      postalCode: string;
+      country: string;
+    };
+    subTotal: number;
+    shipping: number;
+    tax: number;
+    total: number;
+  }>({
     _id: id || "69887257c52a383c5b722c7e",
     user: "john@example.com",
     createdAt: "2026-02-08T11:24:07.078Z",
@@ -71,7 +92,9 @@ const OrderDetails = () => {
               <Select
                 label="Update Status"
                 value={newStatus}
-                onChange={(e) => setNewStatus(e.target.value)}
+                onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                  setNewStatus(event.target.value)
+                }
                 options={[
                   { value: "created", label: "Created" },
                   { value: "processing", label: "Processing" },

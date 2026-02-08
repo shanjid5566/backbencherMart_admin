@@ -82,7 +82,7 @@ const ProductsList = () => {
   }, [data]);
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    return products.filter((product: (typeof products)[number]) => {
       const matchesSearch =
         !search || product.name.toLowerCase().includes(search.toLowerCase());
       const matchesCategory =
@@ -300,7 +300,7 @@ const ProductsList = () => {
                 </tr>
               </thead>
               <tbody>
-                {pagedProducts.map((product) => (
+                {pagedProducts.map((product: (typeof products)[number]) => (
                   <tr key={product._id} className="table-row">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">

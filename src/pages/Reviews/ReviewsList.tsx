@@ -81,7 +81,7 @@ const ReviewsList = () => {
                 </tr>
               </thead>
               <tbody>
-                {products.map((product) => (
+                {products.map((product: (typeof products)[number]) => (
                   <tr key={product._id} className="table-row">
                     <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-100">
                       <div className="flex items-center gap-3">

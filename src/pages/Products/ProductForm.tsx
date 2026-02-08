@@ -4,9 +4,9 @@ import { z } from "zod";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useCreateProductMutation,
-  useGetProductByIdQuery,
+  useGetProductsQuery,
   useUpdateProductMutation,
-} from "../../store/api/adminApi";
+} from "../../store/products/productsApi";
 import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import Textarea from "../../components/ui/Textarea";
@@ -33,12 +33,9 @@ const ProductForm = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
 
-  const { data: product, isLoading: isLoadingProduct } = useGetProductByIdQuery(
-    id!,
-    {
-      skip: !id,
-    },
-  );
+  const { data: productsData, isLoading: isLoadingProduct } =
+    useGetProductsQuery({ page: 1, limit: 1 });
+  const product = productsData?.items?.find((item) => item._id === id);
   const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
 
@@ -191,7 +188,7 @@ const ProductForm = () => {
           <div className="flex gap-3 justify-end pt-4">
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={() => navigate("/products")}
             >
               Cancel

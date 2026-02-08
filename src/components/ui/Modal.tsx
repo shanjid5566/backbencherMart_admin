@@ -1,23 +1,29 @@
-import { Fragment, ReactNode } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
-import { X } from 'lucide-react'
+import { Fragment, ReactNode } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { X } from "lucide-react";
 
 interface ModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title?: string
-  children: ReactNode
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+  size?: "sm" | "md" | "lg" | "xl" | "2xl";
 }
 
-const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) => {
+const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = "md",
+}: ModalProps) => {
   const sizes = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    '2xl': 'max-w-6xl',
-  }
+    sm: "max-w-md",
+    md: "max-w-lg",
+    lg: "max-w-2xl",
+    xl: "max-w-4xl",
+    "2xl": "max-w-6xl",
+  };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -45,7 +51,9 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className={`w-full ${sizes[size]} transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all`}>
+              <Dialog.Panel
+                className={`w-full ${sizes[size]} transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all`}
+              >
                 {title && (
                   <div className="flex items-center justify-between mb-4">
                     <Dialog.Title
@@ -69,8 +77,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
         </div>
       </Dialog>
     </Transition>
-  )
-}
+  );
+};
 
-export default Modal
-
+export default Modal;

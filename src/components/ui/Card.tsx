@@ -1,14 +1,20 @@
-import { ReactNode } from 'react'
+import { ReactNode } from "react";
 
 interface CardProps {
-  children: ReactNode
-  className?: string
-  title?: string
-  subtitle?: string
-  action?: ReactNode
+  children: ReactNode;
+  className?: string;
+  title?: string;
+  subtitle?: string;
+  action?: ReactNode;
 }
 
-const Card = ({ children, className = '', title, subtitle, action }: CardProps) => {
+const Card = ({
+  children,
+  className = "",
+  title,
+  subtitle,
+  action,
+}: CardProps) => {
   return (
     <div className={`card p-6 ${className}`}>
       {(title || subtitle || action) && (
@@ -32,8 +38,7 @@ const Card = ({ children, className = '', title, subtitle, action }: CardProps) 
       )}
       {children}
     </div>
-  )
-}
+  );
+};
 
-export default Card
-
+export default Card;

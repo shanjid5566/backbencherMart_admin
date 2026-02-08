@@ -5,48 +5,76 @@ import {
   DollarSign,
   AlertTriangle,
 } from "lucide-react";
-import {
-  useGetDashboardMetricsQuery,
-  useGetOrdersQuery,
-} from "../../store/api/adminApi";
 import MetricCard from "../../components/dashboard/MetricCard";
 import SalesChart from "../../components/dashboard/SalesChart";
 import RecentOrders from "../../components/dashboard/RecentOrders";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
-import { CardSkeleton } from "../../components/ui/LoadingSkeleton";
 
 const Dashboard = () => {
-  const { data: metricsData, isLoading: metricsLoading } =
-    useGetDashboardMetricsQuery();
-  const { data: ordersData, isLoading: ordersLoading } = useGetOrdersQuery({
-    page: 1,
-    limit: 10,
-    sortBy: "createdAt",
-    sortOrder: "desc",
-  });
+  const metricsNormalized = {
+    totalUsers: 8,
+    userGrowth: 300,
+    totalProducts: 75,
+    productGrowth: 0,
+    totalOrders: 5,
+    orderGrowth: 0,
+    totalRevenue: 200,
+    revenueGrowth: 0,
+  };
 
-  // Mock low stock products
+  const salesChartData = {
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    values: [0, 0, 0, 0, 0, 0, 200],
+  };
+
   const lowStockProducts = [
-    { id: "1", name: "Classic White T-Shirt", stock: 5, minStock: 10 },
-    { id: "2", name: "Denim Jeans", stock: 8, minStock: 10 },
-    { id: "3", name: "Summer Dress", stock: 3, minStock: 10 },
+    { id: "1", name: "Tuxedo Jacket", stock: 8, minStock: 15 },
+    { id: "2", name: "Elegant Evening Gown", stock: 10, minStock: 15 },
+    { id: "3", name: "Wedding Suit Set", stock: 10, minStock: 15 },
+    { id: "4", name: "Velvet Blazer", stock: 10, minStock: 15 },
+    { id: "5", name: "Sequined Party Dress", stock: 12, minStock: 15 },
+    { id: "6", name: "Satin Slip Dress", stock: 15, minStock: 15 },
+    { id: "7", name: "Men's Party Blazer", stock: 15, minStock: 15 },
   ];
 
-  if (metricsLoading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Dashboard
-        </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <CardSkeleton key={i} />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const recentOrders = [
+    {
+      _id: "69887257c52a383c5b722c7e",
+      user: "john@example.com",
+      createdAt: "2026-02-08T11:24:07.078Z",
+      total: 40,
+      status: "processing",
+    },
+    {
+      _id: "698871c4bde2846df0aea212",
+      user: "john@example.com",
+      createdAt: "2026-02-08T11:21:40.119Z",
+      total: 40,
+      status: "processing",
+    },
+    {
+      _id: "69886f9c1e6a9cb7d37d1f31",
+      user: "john@example.com",
+      createdAt: "2026-02-08T11:12:28.023Z",
+      total: 40,
+      status: "processing",
+    },
+    {
+      _id: "69886e4b5e9a86a9f3d5ac96",
+      user: "john@example.com",
+      createdAt: "2026-02-08T11:06:51.889Z",
+      total: 40,
+      status: "processing",
+    },
+    {
+      _id: "69886a5eefb48d8189003124",
+      user: "john@example.com",
+      createdAt: "2026-02-08T10:50:06.739Z",
+      total: 40,
+      status: "processing",
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -64,28 +92,28 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Total Users"
-          value={metricsData?.totalUsers?.toLocaleString() || "0"}
-          change={metricsData?.userGrowth || 0}
+          value={metricsNormalized.totalUsers.toLocaleString()}
+          change={metricsNormalized.userGrowth}
           icon={<Users className="w-6 h-6 text-primary-600" />}
         />
         <MetricCard
           title="Total Products"
-          value={metricsData?.totalProducts?.toLocaleString() || "0"}
-          change={metricsData?.productGrowth || 0}
+          value={metricsNormalized.totalProducts.toLocaleString()}
+          change={metricsNormalized.productGrowth}
           icon={<Package className="w-6 h-6 text-green-600" />}
           iconBgColor="bg-green-100 dark:bg-green-900/20"
         />
         <MetricCard
           title="Total Orders"
-          value={metricsData?.totalOrders?.toLocaleString() || "0"}
-          change={metricsData?.orderGrowth || 0}
+          value={metricsNormalized.totalOrders.toLocaleString()}
+          change={metricsNormalized.orderGrowth}
           icon={<ShoppingCart className="w-6 h-6 text-blue-600" />}
           iconBgColor="bg-blue-100 dark:bg-blue-900/20"
         />
         <MetricCard
           title="Total Revenue"
-          value={`$${metricsData?.totalRevenue?.toLocaleString() || "0"}`}
-          change={metricsData?.revenueGrowth || 0}
+          value={`$${metricsNormalized.totalRevenue.toLocaleString()}`}
+          change={metricsNormalized.revenueGrowth}
           icon={<DollarSign className="w-6 h-6 text-yellow-600" />}
           iconBgColor="bg-yellow-100 dark:bg-yellow-900/20"
         />
@@ -93,8 +121,8 @@ const Dashboard = () => {
 
       {/* Charts and Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <SalesChart />
+        <div className="lg:col-span-2 h-full">
+          <SalesChart data={salesChartData} />
         </div>
 
         {/* Low Stock Alert */}
@@ -125,7 +153,7 @@ const Dashboard = () => {
       </div>
 
       {/* Recent Orders */}
-      <RecentOrders orders={ordersData?.data} isLoading={ordersLoading} />
+      <RecentOrders orders={recentOrders} />
     </div>
   );
 };

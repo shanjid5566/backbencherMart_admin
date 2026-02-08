@@ -1,19 +1,18 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  useCreateFAQMutation,
-  useUpdateFAQMutation,
-} from "../../store/api/adminApi";
 import Modal from "../../components/ui/Modal";
-import Input from "../../components/ui/Input";
 import Textarea from "../../components/ui/Textarea";
 import Button from "../../components/ui/Button";
 import { FAQ } from "../../types";
 import toast from "react-hot-toast";
+import {
+  useCreateFaqMutation,
+  useUpdateFaqMutation,
+} from "../../store/faqs/faqsApi";
 
 const faqSchema = z.object({
-  productId: z.string().min(1, "Product ID is required"),
   question: z.string().min(5, "Question must be at least 5 characters"),
   answer: z.string().min(10, "Answer must be at least 10 characters"),
 });
@@ -24,6 +23,8 @@ interface FAQFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   faq?: FAQ | null;
+  productId: string | null;
+  productName?: string | null;
   onSuccess: () => void;
 }
 
@@ -31,10 +32,12 @@ const FAQFormModal = ({
   isOpen,
   onClose,
   faq,
+  productId,
+  productName,
   onSuccess,
 }: FAQFormModalProps) => {
-  const [createFAQ, { isLoading: isCreating }] = useCreateFAQMutation();
-  const [updateFAQ, { isLoading: isUpdating }] = useUpdateFAQMutation();
+  const [createFaq, { isLoading: isCreating }] = useCreateFaqMutation();
+  const [updateFaq, { isLoading: isUpdating }] = useUpdateFaqMutation();
 
   const {
     register,
@@ -45,27 +48,38 @@ const FAQFormModal = ({
     resolver: zodResolver(faqSchema),
     defaultValues: faq
       ? {
-          productId: faq.productId,
           question: faq.question,
           answer: faq.answer,
         }
       : undefined,
   });
 
+  useEffect(() => {
+    if (faq) {
+      reset({ question: faq.question, answer: faq.answer });
+    } else {
+      reset({ question: "", answer: "" });
+    }
+  }, [faq, reset]);
+
   const onSubmit = async (data: FAQInputs) => {
     try {
       if (faq) {
-        await updateFAQ({ id: faq._id, ...data }).unwrap();
+        await updateFaq({ faqId: faq._id, ...data }).unwrap();
         toast.success("FAQ updated successfully");
       } else {
-        await createFAQ(data).unwrap();
+        if (!productId) {
+          toast.error("Select a product before adding a FAQ");
+          return;
+        }
+        await createFaq({ productId, ...data }).unwrap();
         toast.success("FAQ created successfully");
       }
       reset();
       onSuccess();
       onClose();
     } catch (error) {
-      toast.error(`Failed to ${faq ? "update" : "create"} FAQ`);
+      toast.error("Failed to save FAQ");
     }
   };
 
@@ -74,6 +88,8 @@ const FAQFormModal = ({
     onClose();
   };
 
+  const isSaving = isCreating || isUpdating;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -81,12 +97,11 @@ const FAQFormModal = ({
       title={faq ? "Edit FAQ" : "Create FAQ"}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input
-          label="Product ID"
-          placeholder="Enter product ID"
-          error={errors.productId?.message}
-          {...register("productId")}
-        />
+        {!faq && productName && (
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Product: {productName}
+          </p>
+        )}
 
         <Textarea
           label="Question"
@@ -108,7 +123,7 @@ const FAQFormModal = ({
           <Button type="button" variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button type="submit" isLoading={isCreating || isUpdating}>
+          <Button type="submit" isLoading={isSaving}>
             {faq ? "Update" : "Create"}
           </Button>
         </div>

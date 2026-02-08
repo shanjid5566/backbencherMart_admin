@@ -47,7 +47,7 @@ const SalesChart = ({ data }: SalesChartProps) => {
 
   const options = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         display: false,
@@ -73,8 +73,12 @@ const SalesChart = ({ data }: SalesChartProps) => {
   };
 
   return (
-    <Card title="Sales Overview" subtitle="Last 7 days">
-      <div className="h-80">
+    <Card
+      title="Sales Overview"
+      subtitle="Last 7 days"
+      className="h-full flex flex-col"
+    >
+      <div className="flex-1 min-h-[20rem]">
         <Line data={chartData} options={options} />
       </div>
     </Card>

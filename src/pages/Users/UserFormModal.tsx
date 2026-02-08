@@ -1,16 +1,15 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  useCreateUserMutation,
-  useUpdateUserMutation,
-} from "../../store/api/adminApi";
+
 import Modal from "../../components/ui/Modal";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Button from "../../components/ui/Button";
-import { User } from "../../types";
 import toast from "react-hot-toast";
+import { User } from "../../types";
+import { useUpdateUserMutation } from "../../store/users/usersApi";
 
 const userSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -39,7 +38,7 @@ const UserFormModal = ({
   user,
   onSuccess,
 }: UserFormModalProps) => {
-  const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
+  const [isSaving, setIsSaving] = useState(false);
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
 
   const {
@@ -64,6 +63,7 @@ const UserFormModal = ({
   });
 
   const onSubmit = async (data: UserInputs) => {
+    setIsSaving(true);
     try {
       if (user) {
         const updateData = { ...data };
@@ -73,7 +73,6 @@ const UserFormModal = ({
         await updateUser({ id: user._id, ...updateData }).unwrap();
         toast.success("User updated successfully");
       } else {
-        await createUser(data).unwrap();
         toast.success("User created successfully");
       }
       reset();
@@ -81,6 +80,8 @@ const UserFormModal = ({
       onClose();
     } catch (error) {
       toast.error(`Failed to ${user ? "update" : "create"} user`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -134,7 +135,6 @@ const UserFormModal = ({
           {...register("role")}
           options={[
             { value: "customer", label: "Customer" },
-            { value: "staff", label: "Staff" },
             { value: "admin", label: "Admin" },
           ]}
         />
@@ -158,7 +158,7 @@ const UserFormModal = ({
           <Button type="button" variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button type="submit" isLoading={isCreating || isUpdating}>
+          <Button type="submit" isLoading={isSaving || isUpdating}>
             {user ? "Update" : "Create"}
           </Button>
         </div>

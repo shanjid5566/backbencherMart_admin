@@ -1,50 +1,49 @@
 import { useParams } from "react-router-dom";
-import {
-  useGetOrderByIdQuery,
-  useUpdateOrderStatusMutation,
-} from "../../store/api/adminApi";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
-import { CardSkeleton } from "../../components/ui/LoadingSkeleton";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import toast from "react-hot-toast";
 import { useState } from "react";
 
 const OrderDetails = () => {
   const { id } = useParams();
-  const { data, isLoading } = useGetOrderByIdQuery(id);
-  const [updateStatus, { isLoading: isUpdating }] =
-    useUpdateOrderStatusMutation();
   const [newStatus, setNewStatus] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [order, setOrder] = useState({
+    _id: id || "69887257c52a383c5b722c7e",
+    user: "john@example.com",
+    createdAt: "2026-02-08T11:24:07.078Z",
+    status: "processing",
+    items: [
+      {
+        product: { name: "Tuxedo Jacket" },
+        quantity: 1,
+        price: 40,
+      },
+    ],
+    shippingAddress: {
+      street: "12/A, Lake Road",
+      city: "Dhaka",
+      state: "Dhaka",
+      postalCode: "1205",
+      country: "Bangladesh",
+    },
+    subTotal: 40,
+    shipping: 0,
+    tax: 0,
+    total: 40,
+  });
 
-  const handleStatusUpdate = async () => {
-    if (!newStatus || !id) return;
-
-    try {
-      await updateStatus({ id, status: newStatus }).unwrap();
-      toast.success("Order status updated successfully");
-      setNewStatus("");
-    } catch (error) {
-      toast.error("Failed to update order status");
-    }
+  const handleStatusUpdate = () => {
+    if (!newStatus) return;
+    setIsUpdating(true);
+    setOrder((prev) => ({ ...prev, status: newStatus }));
+    setNewStatus("");
+    setIsUpdating(false);
+    toast.success("Order status updated");
   };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <CardSkeleton />
-        <CardSkeleton />
-      </div>
-    );
-  }
-
-  if (!data) {
-    return <div>Order not found</div>;
-  }
-
-  const order = data;
 
   return (
     <div className="space-y-6 max-w-4xl">

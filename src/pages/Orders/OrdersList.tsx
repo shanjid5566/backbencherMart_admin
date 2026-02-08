@@ -1,35 +1,58 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, Filter } from "lucide-react";
-import { useGetOrdersQuery } from "../../store/api/adminApi";
+import { Eye } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Select from "../../components/ui/Select";
-import { TableSkeleton } from "../../components/ui/LoadingSkeleton";
 import { formatCurrency, formatDate } from "../../utils/formatters";
+import { TableSkeleton } from "../../components/ui/LoadingSkeleton";
+import toast from "react-hot-toast";
+import {
+  useGetOrdersQuery,
+  useUpdateOrderStatusMutation,
+} from "../../store/orders/ordersApi";
 
 const OrdersList = () => {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
-
-  const { data, isLoading } = useGetOrdersQuery({
+  const { data, isLoading, refetch } = useGetOrdersQuery({
     page,
-    limit: 10,
-    status: statusFilter,
-    sortBy: "createdAt",
-    sortOrder: "desc",
+    limit: 20,
+    status: statusFilter || undefined,
   });
+  const [updateOrderStatus, { isLoading: isUpdating }] =
+    useUpdateOrderStatusMutation();
+
+  const pageSize = data?.pagination?.limit ?? 20;
+  const total = data?.pagination?.total ?? 0;
+  const totalPages = data?.pagination?.pages ?? 1;
+
+  const orders = useMemo(() => {
+    return (data?.orders || []).map((order) => ({
+      _id: order.id,
+      orderId: order.orderId,
+      customer: order.customer,
+      customerEmail: order.customerEmail,
+      createdAt: order.date,
+      total: order.total,
+      status: order.status,
+    }));
+  }, [data]);
+
+  const filteredOrders = orders;
+  const currentPage = Math.min(page, totalPages);
+  const pagedOrders = filteredOrders;
 
   const getStatusVariant = (status) => {
     switch (status) {
-      case "completed":
+      case "delivered":
         return "success";
       case "processing":
         return "info";
       case "cancelled":
         return "danger";
-      case "refunded":
+      case "shipped":
         return "warning";
       default:
         return "default";
@@ -51,14 +74,16 @@ const OrdersList = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
             options={[
               { value: "", label: "All Status" },
-              { value: "created", label: "Created" },
               { value: "processing", label: "Processing" },
-              { value: "completed", label: "Completed" },
+              { value: "shipped", label: "Shipped" },
+              { value: "delivered", label: "Delivered" },
               { value: "cancelled", label: "Cancelled" },
-              { value: "refunded", label: "Refunded" },
             ]}
           />
         </div>
@@ -93,15 +118,13 @@ const OrdersList = () => {
                 </tr>
               </thead>
               <tbody>
-                {data?.data.map((order) => (
+                {pagedOrders.map((order) => (
                   <tr key={order._id} className="table-row">
                     <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
-                      #{order._id.slice(-6)}
+                      #{order.orderId || order._id.slice(-6)}
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
-                      {typeof order.user === "object"
-                        ? order.user.email
-                        : order.user}
+                      {order.customerEmail || order.customer}
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                       {formatDate(order.createdAt)}
@@ -115,11 +138,38 @@ const OrdersList = () => {
                       </Badge>
                     </td>
                     <td className="py-3 px-4">
-                      <Link to={`/orders/${order._id}`}>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={order.status}
+                          onChange={async (e) => {
+                            try {
+                              await updateOrderStatus({
+                                orderId: order._id,
+                                status: e.target.value,
+                              }).unwrap();
+                              toast.success("Status updated");
+                              refetch();
+                            } catch (error) {
+                              toast.error("Failed to update status");
+                            }
+                          }}
+                          options={[
+                            { value: "processing", label: "processing" },
+                            { value: "shipped", label: "shipped" },
+                            { value: "delivered", label: "delivered" },
+                            { value: "cancelled", label: "cancelled" },
+                          ]}
+                        />
+                        <Link to={`/orders/${order._id}`}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={isUpdating}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -128,26 +178,26 @@ const OrdersList = () => {
           </div>
         )}
 
-        {data && data.totalPages > 1 && (
+        {totalPages > 1 && (
           <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {(page - 1) * 10 + 1} to {Math.min(page * 10, data.total)}{" "}
-              of {data.total} orders
+              Showing {(currentPage - 1) * pageSize + 1} to{" "}
+              {Math.min(currentPage * pageSize, total)} of {total} orders
             </p>
             <div className="flex gap-2">
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setPage(page - 1)}
-                disabled={page === 1}
+                onClick={() => setPage(currentPage - 1)}
+                disabled={currentPage === 1}
               >
                 Previous
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={page === data.totalPages}
+                onClick={() => setPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
               >
                 Next
               </Button>

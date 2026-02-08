@@ -1,20 +1,20 @@
-import { useState } from 'react'
-import { Search, Bell, Moon, Sun, LogOut, Menu } from 'lucide-react'
-import { useAppDispatch, useAppSelector } from '../../store/hooks'
-import { toggleTheme } from '../../store/slices/themeSlice'
-import { toggleSidebar } from '../../store/slices/uiSlice'
-import { logout } from '../../store/slices/authSlice'
+import { useState } from "react";
+import { Search, Bell, Moon, Sun, LogOut, Menu } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { toggleTheme } from "../../store/slices/themeSlice";
+import { toggleSidebar } from "../../store/slices/uiSlice";
+import { logout } from "../../store/auth/authSlice";
 
 const Header = () => {
-  const dispatch = useAppDispatch()
-  const isDarkMode = useAppSelector((state) => state.theme.isDarkMode)
-  const notifications = useAppSelector((state) => state.ui.notifications)
-  const [showNotifications, setShowNotifications] = useState(false)
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const dispatch = useAppDispatch();
+  const isDarkMode = useAppSelector((state) => state.theme.isDarkMode);
+  const notifications = useAppSelector((state) => state.ui.notifications);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const handleLogout = () => {
-    dispatch(logout())
-  }
+    dispatch(logout());
+  };
 
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 lg:px-6">
@@ -54,7 +54,7 @@ const Header = () => {
             <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
+                {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </button>
@@ -77,7 +77,9 @@ const Header = () => {
                     <div
                       key={notification.id}
                       className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                        !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                        !notification.read
+                          ? "bg-blue-50 dark:bg-blue-900/20"
+                          : ""
                       }`}
                     >
                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -104,8 +106,7 @@ const Header = () => {
         </button>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
-
+export default Header;

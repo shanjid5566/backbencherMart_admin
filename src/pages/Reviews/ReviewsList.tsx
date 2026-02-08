@@ -1,66 +1,34 @@
-import { useState } from "react";
-import { Trash2, Star } from "lucide-react";
-import {
-  useGetReviewsQuery,
-  useDeleteReviewMutation,
-} from "../../store/api/adminApi";
+import { useMemo, useState } from "react";
+import { Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import Badge from "../../components/ui/Badge";
-import Modal from "../../components/ui/Modal";
 import { TableSkeleton } from "../../components/ui/LoadingSkeleton";
-import { formatDate } from "../../utils/formatters";
-import toast from "react-hot-toast";
+import { useGetProductsQuery } from "../../store/products/productsApi";
 
 const ReviewsList = () => {
-  const [page, setPage] = useState(1);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [productsPage, setProductsPage] = useState(1);
 
-  const { data, isLoading, refetch } = useGetReviewsQuery({
-    page,
-    limit: 10,
-    sortBy: "createdAt",
-    sortOrder: "desc",
-  });
+  const { data: productsData, isLoading: isProductsLoading } =
+    useGetProductsQuery({
+      page: productsPage,
+      limit: 10,
+    });
 
-  const [deleteReview, { isLoading: isDeleting }] = useDeleteReviewMutation();
+  const products = useMemo(() => {
+    return (productsData?.items || []).map((product) => ({
+      _id: product._id,
+      name: product.name,
+      category: product.category,
+      image: product.image?.[0],
+    }));
+  }, [productsData]);
 
-  const handleDelete = async () => {
-    if (!reviewToDelete) return;
-
-    try {
-      await deleteReview(reviewToDelete).unwrap();
-      toast.success("Review deleted successfully");
-      setDeleteModalOpen(false);
-      setReviewToDelete(null);
-      refetch();
-    } catch (error) {
-      toast.error("Failed to delete review");
-    }
-  };
-
-  const confirmDelete = (reviewId) => {
-    setReviewToDelete(reviewId);
-    setDeleteModalOpen(true);
-  };
-
-  const renderStars = (rating) => {
-    return (
-      <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`w-4 h-4 ${
-              star <= rating
-                ? "fill-yellow-400 text-yellow-400"
-                : "text-gray-300 dark:text-gray-600"
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
+  const productsTotal = productsData?.meta?.totalItems ?? 0;
+  const productsTotalPages = productsData?.meta?.totalPages ?? 1;
+  const productsPageSize = productsData?.meta?.limit ?? 10;
+  const currentProductPage = Math.min(productsPage, productsTotalPages);
 
   return (
     <div className="space-y-6">
@@ -69,15 +37,28 @@ const ReviewsList = () => {
           Reviews
         </h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">
-          Manage product reviews and ratings
+          Select a product to view review details
         </p>
       </div>
 
       <Card>
-        {isLoading ? (
-          <TableSkeleton rows={10} columns={5} />
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Products
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Click the eye icon to view reviews for a product
+            </p>
+          </div>
+        </div>
+
+        {isProductsLoading ? (
+          <div className="mt-4">
+            <TableSkeleton rows={6} columns={3} />
+          </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto mt-4">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -85,16 +66,7 @@ const ReviewsList = () => {
                     Product
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    User
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Rating
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Comment
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Date
+                    Category
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 dark:text-gray-300">
                     Actions
@@ -102,33 +74,32 @@ const ReviewsList = () => {
                 </tr>
               </thead>
               <tbody>
-                {data?.data.map((review) => (
-                  <tr key={review._id} className="table-row">
+                {products.map((product) => (
+                  <tr key={product._id} className="table-row">
                     <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-100">
-                      {typeof review.product === "object"
-                        ? review.product.name
-                        : "Product"}
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={product.image || "/placeholder.png"}
+                          alt={product.name}
+                          className="w-10 h-10 rounded object-cover"
+                        />
+                        <span>{product.name}</span>
+                      </div>
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
-                      {typeof review.user === "object"
-                        ? review.user.email
-                        : review.user}
-                    </td>
-                    <td className="py-3 px-4">{renderStars(review.rating)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 max-w-md truncate">
-                      {review.comment}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
-                      {formatDate(review.createdAt)}
+                      {product.category}
                     </td>
                     <td className="py-3 px-4">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => confirmDelete(review._id)}
-                        className="text-red-600 hover:text-red-700"
+                        onClick={() =>
+                          navigate(`/reviews/${product._id}`, {
+                            state: { productName: product.name },
+                          })
+                        }
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Eye className="w-4 h-4" />
                       </Button>
                     </td>
                   </tr>
@@ -138,26 +109,27 @@ const ReviewsList = () => {
           </div>
         )}
 
-        {data && data.totalPages > 1 && (
+        {productsTotalPages > 1 && (
           <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {(page - 1) * 10 + 1} to {Math.min(page * 10, data.total)}{" "}
-              of {data.total} reviews
+              Showing {(currentProductPage - 1) * productsPageSize + 1} to{" "}
+              {Math.min(currentProductPage * productsPageSize, productsTotal)}{" "}
+              of {productsTotal} products
             </p>
             <div className="flex gap-2">
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setPage(page - 1)}
-                disabled={page === 1}
+                onClick={() => setProductsPage(currentProductPage - 1)}
+                disabled={currentProductPage === 1}
               >
                 Previous
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={page === data.totalPages}
+                onClick={() => setProductsPage(currentProductPage + 1)}
+                disabled={currentProductPage === productsTotalPages}
               >
                 Next
               </Button>
@@ -165,34 +137,6 @@ const ReviewsList = () => {
           </div>
         )}
       </Card>
-
-      <Modal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        title="Delete Review"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-600 dark:text-gray-400">
-            Are you sure you want to delete this review? This action cannot be
-            undone.
-          </p>
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => setDeleteModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={handleDelete}
-              isLoading={isDeleting}
-            >
-              Delete
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };

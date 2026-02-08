@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { Bar, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -9,12 +10,14 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import {
-  useGetSalesAnalyticsQuery,
-  useGetProductAnalyticsQuery,
-} from "../../store/api/adminApi";
 import Card from "../../components/ui/Card";
-import { CardSkeleton } from "../../components/ui/LoadingSkeleton";
+import Select from "../../components/ui/Select";
+import {
+  useGetBusinessMetricsQuery,
+  useGetMonthlyRevenueQuery,
+  useGetSalesByCategoryQuery,
+} from "../../store/analytics/analyticsApi";
+import { formatCurrency, formatPercentage } from "../../utils/formatters";
 
 ChartJS.register(
   CategoryScale,
@@ -27,51 +30,68 @@ ChartJS.register(
 );
 
 const Analytics = () => {
-  const { data: salesData, isLoading: salesLoading } =
-    useGetSalesAnalyticsQuery({});
-  const { data: productData, isLoading: productLoading } =
-    useGetProductAnalyticsQuery();
+  const [months, setMonths] = useState(12);
+  const { data: revenueData, isLoading: isRevenueLoading } =
+    useGetMonthlyRevenueQuery(months);
+  const { data: categoryData, isLoading: isCategoryLoading } =
+    useGetSalesByCategoryQuery(undefined);
+  const { data: metricsData, isLoading: isMetricsLoading } =
+    useGetBusinessMetricsQuery(undefined);
 
-  const categoryChartData = {
-    labels: ["Casual", "Formal", "Party", "Gym"],
-    datasets: [
-      {
-        label: "Sales by Category",
-        data: [45, 25, 20, 10],
-        backgroundColor: [
-          "rgba(59, 130, 246, 0.8)",
-          "rgba(16, 185, 129, 0.8)",
-          "rgba(245, 158, 11, 0.8)",
-          "rgba(239, 68, 68, 0.8)",
-        ],
-      },
-    ],
+  const monthlyRevenueChart = useMemo(() => {
+    const items = revenueData?.data || [];
+    return {
+      labels: items.map((item) => `${item.month} ${item.year}`),
+      datasets: [
+        {
+          label: "Revenue",
+          data: items.map((item) => item.revenue),
+          backgroundColor: "rgba(59, 130, 246, 0.8)",
+        },
+      ],
+    };
+  }, [revenueData]);
+
+  const categoryChartData = useMemo(() => {
+    const palette = [
+      "rgba(59, 130, 246, 0.8)",
+      "rgba(16, 185, 129, 0.8)",
+      "rgba(245, 158, 11, 0.8)",
+      "rgba(239, 68, 68, 0.8)",
+      "rgba(139, 92, 246, 0.8)",
+      "rgba(14, 116, 144, 0.8)",
+    ];
+    const items = categoryData?.data || [];
+    return {
+      labels: items.map((item) => item.category),
+      datasets: [
+        {
+          label: "Sales by Category",
+          data: items.map((item) => item.revenue),
+          backgroundColor: items.map(
+            (_, index) => palette[index % palette.length],
+          ),
+        },
+      ],
+    };
+  }, [categoryData]);
+
+  const monthOptions = [
+    { value: 1, label: "1 month" },
+    { value: 3, label: "3 months" },
+    { value: 6, label: "6 months" },
+    { value: 12, label: "12 months" },
+  ];
+
+  const formatChange = (value: number) => {
+    const sign = value > 0 ? "+" : value < 0 ? "-" : "";
+    return `${sign}${Math.abs(value).toFixed(2)}%`;
   };
 
-  const monthlyRevenueData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Revenue",
-        data: [65000, 59000, 80000, 81000, 56000, 95000],
-        backgroundColor: "rgba(59, 130, 246, 0.8)",
-      },
-    ],
+  const formatCurrencyChange = (value: number) => {
+    const sign = value > 0 ? "+" : value < 0 ? "-" : "";
+    return `${sign}${formatCurrency(Math.abs(value))}`;
   };
-
-  if (salesLoading || productLoading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Analytics
-        </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <CardSkeleton />
-          <CardSkeleton />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -85,42 +105,68 @@ const Analytics = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card title="Monthly Revenue" subtitle="Last 6 months">
+        <Card
+          title="Monthly Revenue"
+          subtitle={`Last ${months} month${months === 1 ? "" : "s"}`}
+          action={
+            <div className="min-w-[140px]">
+              <Select
+                options={monthOptions}
+                value={months}
+                onChange={(event) =>
+                  setMonths(Number(event.target.value || 12))
+                }
+              />
+            </div>
+          }
+        >
           <div className="h-80">
-            <Bar
-              data={monthlyRevenueData}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: true,
+            {isRevenueLoading ? (
+              <div className="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+                Loading revenue data...
+              </div>
+            ) : (
+              <Bar
+                data={monthlyRevenueChart}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: true,
+                    },
                   },
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                    },
                   },
-                },
-              }}
-            />
+                }}
+              />
+            )}
           </div>
         </Card>
 
         <Card title="Sales by Category" subtitle="Distribution">
           <div className="h-80 flex items-center justify-center">
-            <Doughnut
-              data={categoryChartData}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    position: "bottom",
+            {isCategoryLoading ? (
+              <div className="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+                Loading category data...
+              </div>
+            ) : (
+              <Doughnut
+                data={categoryChartData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: "bottom",
+                    },
                   },
-                },
-              }}
-            />
+                }}
+              />
+            )}
           </div>
         </Card>
       </div>
@@ -129,10 +175,14 @@ const Analytics = () => {
         <Card title="Conversion Rate">
           <div className="text-center py-8">
             <p className="text-4xl font-bold text-primary-600 dark:text-primary-400">
-              3.24%
+              {isMetricsLoading
+                ? "--"
+                : formatPercentage(metricsData?.conversionRate ?? 0, 2)}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              +0.5% from last month
+              {isMetricsLoading
+                ? "Loading change..."
+                : `${formatChange(metricsData?.conversionChange ?? 0)} from last month`}
             </p>
           </div>
         </Card>
@@ -140,10 +190,14 @@ const Analytics = () => {
         <Card title="Average Order Value">
           <div className="text-center py-8">
             <p className="text-4xl font-bold text-green-600 dark:text-green-400">
-              $127.50
+              {isMetricsLoading
+                ? "--"
+                : formatCurrency(metricsData?.avgOrderValue ?? 0)}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              +$12.30 from last month
+              {isMetricsLoading
+                ? "Loading change..."
+                : `${formatCurrencyChange(metricsData?.avgOrderChange ?? 0)} from last month`}
             </p>
           </div>
         </Card>
@@ -151,10 +205,12 @@ const Analytics = () => {
         <Card title="Customer Retention">
           <div className="text-center py-8">
             <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">
-              68%
+              {isMetricsLoading
+                ? "--"
+                : formatPercentage(metricsData?.customerRetention ?? 0, 2)}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              +5% from last month
+              {isMetricsLoading ? "Loading metrics..." : "Latest snapshot"}
             </p>
           </div>
         </Card>

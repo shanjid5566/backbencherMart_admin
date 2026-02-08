@@ -14,7 +14,7 @@ const MetricCard = ({ title, value, change, icon, iconBgColor = 'bg-primary-100 
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">
             {value}
           </p>
-          {change !== undefined && (
+          {/* {change !== undefined && (
             <div className="flex items-center gap-1 mt-2">
               {isPositive && <TrendingUp className="w-4 h-4 text-green-500" />}
               {isNegative && <TrendingDown className="w-4 h-4 text-red-500" />}
@@ -27,7 +27,7 @@ const MetricCard = ({ title, value, change, icon, iconBgColor = 'bg-primary-100 
               </span>
               <span className="text-sm text-gray-500 dark:text-gray-400">vs last month</span>
             </div>
-          )}
+          )} */}
         </div>
         <div className={`p-3 rounded-lg ${iconBgColor}`}>
           {icon}

@@ -12,10 +12,27 @@ interface AuthState {
   token: string | null;
 }
 
+const getStoredUser = (): AuthState["user"] => {
+  try {
+    const raw = localStorage.getItem("authUser");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const storedToken = (() => {
+  try {
+    return localStorage.getItem("authToken");
+  } catch {
+    return null;
+  }
+})();
+
 const initialState: AuthState = {
-  isAuthenticated: false,
-  user: null,
-  token: null,
+  isAuthenticated: Boolean(storedToken),
+  user: getStoredUser(),
+  token: storedToken,
 };
 
 const authSlice = createSlice({
@@ -31,6 +48,7 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       try {
         localStorage.setItem("authToken", action.payload.token);
+        localStorage.setItem("authUser", JSON.stringify(action.payload.user));
       } catch {
         // Ignore storage errors (private mode, etc.)
       }
@@ -45,6 +63,7 @@ const authSlice = createSlice({
       state.token = null;
       try {
         localStorage.removeItem("authToken");
+        localStorage.removeItem("authUser");
       } catch {
         // Ignore storage errors (private mode, etc.)
       }

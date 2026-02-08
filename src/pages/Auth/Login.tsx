@@ -3,7 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAppDispatch } from "../../store/hooks";
-import { setCredentials } from "../../store/slices/authSlice";
+import { setCredentials } from "../../store/auth/authSlice";
+import { useLoginMutation } from "../../store/auth/authApi";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
@@ -17,7 +18,8 @@ const loginSchema = z.object({
 type LoginInputs = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingLocal, setIsLoadingLocal] = useState(false);
+  const [loginMutation, { isLoading: isLoggingIn }] = useLoginMutation();
   const dispatch = useAppDispatch();
 
   const {
@@ -29,28 +31,24 @@ const Login = () => {
   });
 
   const onSubmit = async (data: LoginInputs) => {
-    setIsLoading(true);
+    setIsLoadingLocal(true);
     try {
-      // Mock authentication - replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock user data
+      const result = await loginMutation(data).unwrap();
       const user = {
-        id: "1",
-        email: data.email,
-        firstName: "Admin",
-        lastName: "User",
-        role: "admin" as const,
+        id: result.user.id,
+        email: result.user.email,
+        firstName: result.user.firstName,
+        lastName: result.user.lastName,
+        role: result.user.role,
       };
-
-      const token = "mock-jwt-token";
-
+      const token = result.token;
       dispatch(setCredentials({ user, token }));
       toast.success("Login successful!");
-    } catch (error) {
-      toast.error("Login failed. Please try again.");
+    } catch (error: any) {
+      const msg = error?.data?.message || "Login failed. Please try again.";
+      toast.error(msg);
     } finally {
-      setIsLoading(false);
+      setIsLoadingLocal(false);
     }
   };
 
@@ -84,16 +82,14 @@ const Login = () => {
               {...register("password")}
             />
 
-            <Button type="submit" isLoading={isLoading} className="w-full">
+            <Button
+              type="submit"
+              isLoading={isLoggingIn || isLoadingLocal}
+              className="w-full"
+            >
               Sign In
             </Button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            <p>Demo credentials:</p>
-            <p>Email: admin@example.com</p>
-            <p>Password: password</p>
-          </div>
         </Card>
       </div>
     </div>

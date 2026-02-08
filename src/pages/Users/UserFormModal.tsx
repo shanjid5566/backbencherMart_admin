@@ -19,7 +19,7 @@ const userSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters")
     .optional(),
-  role: z.enum(["admin", "staff", "customer"]),
+  role: z.enum(["admin", "staff", "customer", "user"]),
   isVerified: z.boolean(),
 });
 
@@ -135,6 +135,7 @@ const UserFormModal = ({
           {...register("role")}
           options={[
             { value: "customer", label: "Customer" },
+            { value: "user", label: "User" },
             { value: "admin", label: "Admin" },
           ]}
         />
@@ -155,7 +156,7 @@ const UserFormModal = ({
         </div>
 
         <div className="flex gap-3 justify-end pt-4">
-          <Button type="button" variant="outline" onClick={handleClose}>
+          <Button type="button" variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
           <Button type="submit" isLoading={isSaving || isUpdating}>

@@ -39,8 +39,18 @@ const ReviewDetails = () => {
       : skipToken,
   );
 
+  type ApiReview = {
+    _id: string;
+    productId: string;
+    userEmail?: string;
+    userName?: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+  };
+
   const reviews = useMemo(() => {
-    return (reviewsData?.items || []).map((review) => ({
+    return (reviewsData?.items || []).map((review: ApiReview) => ({
       _id: review._id,
       productId: review.productId,
       userEmail: review.userEmail,

@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
@@ -16,6 +16,17 @@ import {
   useGetProductsQuery,
   useUpdateProductMutation,
 } from "../../store/products/productsApi";
+
+type ApiProduct = {
+  _id: string;
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  averageRatings?: number;
+  createdAt?: string;
+  image?: string[];
+};
 
 const ProductsList = () => {
   const [page, setPage] = useState(1);
@@ -58,7 +69,7 @@ const ProductsList = () => {
   const total = data?.meta?.totalItems ?? 0;
 
   const products = useMemo(() => {
-    return (data?.items || []).map((item) => ({
+    return (data?.items || []).map((item: ApiProduct) => ({
       _id: item._id,
       name: item.name,
       category: item.category,
@@ -106,7 +117,7 @@ const ProductsList = () => {
     setIsAddModalOpen(false);
   };
 
-  const handleEditOpen = (product) => {
+  const handleEditOpen = (product: (typeof products)[number]) => {
     setSelectedProductId(product._id);
     setEditState({
       price: String(product.price ?? ""),
@@ -238,12 +249,16 @@ const ProductsList = () => {
             <Input
               placeholder="Search products..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                setSearch(event.target.value)
+              }
             />
           </div>
           <Select
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+              setCategoryFilter(event.target.value)
+            }
             options={[
               { value: "", label: "All Categories" },
               { value: "men", label: "Men" },
@@ -395,7 +410,9 @@ const ProductsList = () => {
               placeholder="Dress Drescription ..."
               rows={3}
               value={formState.description}
-              onChange={(e) => handleFormChange("description", e.target.value)}
+              onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+                handleFormChange("description", event.target.value)
+              }
               required
             />
 
@@ -406,7 +423,9 @@ const ProductsList = () => {
                 step="0.01"
                 placeholder="1299.99"
                 value={formState.price}
-                onChange={(e) => handleFormChange("price", e.target.value)}
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                  handleFormChange("price", event.target.value)
+                }
                 required
               />
               <Input
@@ -415,7 +434,9 @@ const ProductsList = () => {
                 step="0.01"
                 placeholder="1499.99"
                 value={formState.oldPrice}
-                onChange={(e) => handleFormChange("oldPrice", e.target.value)}
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                  handleFormChange("oldPrice", event.target.value)
+                }
               />
             </div>
 
@@ -425,14 +446,16 @@ const ProductsList = () => {
                 type="number"
                 placeholder="10"
                 value={formState.discountPercentage}
-                onChange={(e) =>
-                  handleFormChange("discountPercentage", e.target.value)
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                  handleFormChange("discountPercentage", event.target.value)
                 }
               />
               <Select
                 label="Category"
                 value={formState.category}
-                onChange={(e) => handleFormChange("category", e.target.value)}
+                onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                  handleFormChange("category", event.target.value)
+                }
                 options={[
                   { value: "men", label: "Men" },
                   { value: "women", label: "Women" },
@@ -445,7 +468,9 @@ const ProductsList = () => {
               <Select
                 label="Dress Style"
                 value={formState.dressStyle}
-                onChange={(e) => handleFormChange("dressStyle", e.target.value)}
+                onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                  handleFormChange("dressStyle", event.target.value)
+                }
                 options={[
                   { value: "Casual", label: "Casual" },
                   { value: "Formal", label: "Formal" },
@@ -457,7 +482,9 @@ const ProductsList = () => {
                 label="Colors"
                 placeholder="black, gray"
                 value={formState.colors}
-                onChange={(e) => handleFormChange("colors", e.target.value)}
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                  handleFormChange("colors", event.target.value)
+                }
                 helperText="Comma-separated list"
               />
             </div>
@@ -485,8 +512,8 @@ const ProductsList = () => {
               <Select
                 label="In Stock"
                 value={formState.inStock ? "true" : "false"}
-                onChange={(e) =>
-                  handleFormChange("inStock", e.target.value === "true")
+                onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                  handleFormChange("inStock", event.target.value === "true")
                 }
                 options={[
                   { value: "true", label: "true" },
@@ -500,7 +527,9 @@ const ProductsList = () => {
               type="number"
               placeholder="50"
               value={formState.stock}
-              onChange={(e) => handleFormChange("stock", e.target.value)}
+              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                handleFormChange("stock", event.target.value)
+              }
               required
             />
 
@@ -523,7 +552,11 @@ const ProductsList = () => {
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={handleAddClose}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleAddClose}
+              >
                 Cancel
               </Button>
               <Button type="submit" isLoading={isCreating}>
@@ -562,7 +595,7 @@ const ProductsList = () => {
             required
           />
           <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={handleEditClose}>
+            <Button type="button" variant="secondary" onClick={handleEditClose}>
               Cancel
             </Button>
             <Button type="submit" isLoading={isUpdating}>

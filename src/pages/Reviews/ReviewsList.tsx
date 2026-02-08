@@ -16,8 +16,15 @@ const ReviewsList = () => {
       limit: 10,
     });
 
+  type ApiProduct = {
+    _id: string;
+    name: string;
+    category: string;
+    image?: string[];
+  };
+
   const products = useMemo(() => {
-    return (productsData?.items || []).map((product) => ({
+    return (productsData?.items || []).map((product: ApiProduct) => ({
       _id: product._id,
       name: product.name,
       category: product.category,

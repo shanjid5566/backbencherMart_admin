@@ -128,7 +128,7 @@ const OrdersList = () => {
                 </tr>
               </thead>
               <tbody>
-                {pagedOrders.map((order) => (
+                {pagedOrders.map((order: (typeof orders)[number]) => (
                   <tr key={order._id} className="table-row">
                     <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                       #{order.orderId || order._id.slice(-6)}

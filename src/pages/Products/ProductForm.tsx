@@ -35,7 +35,22 @@ const ProductForm = () => {
 
   const { data: productsData, isLoading: isLoadingProduct } =
     useGetProductsQuery({ page: 1, limit: 1 });
-  const product = productsData?.items?.find((item) => item._id === id);
+  type ApiProduct = {
+    _id: string;
+    name: string;
+    description: string;
+    price: number;
+    oldPrice?: number;
+    category: string;
+    dressStyle: string;
+    stock: number;
+    colors: string[];
+    sizes: string[];
+  };
+
+  const product = productsData?.items?.find(
+    (item: ApiProduct) => item._id === id,
+  );
   const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
 

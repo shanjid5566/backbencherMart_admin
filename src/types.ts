@@ -15,3 +15,11 @@ export interface User {
   isVerified: boolean;
   createdAt: string;
 }
+
+export interface Order {
+  _id: string;
+  user: string | { email: string };
+  createdAt: string;
+  total: number;
+  status: string;
+}

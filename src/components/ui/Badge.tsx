@@ -1,5 +1,11 @@
 import { ReactNode } from 'react'
 
+interface BadgeProps {
+  children: ReactNode
+  variant?: 'success' | 'warning' | 'danger' | 'info' | 'default'
+  className?: string
+}
+
 const Badge = ({ children, variant = 'default', className = '' }: BadgeProps) => {
   const variants = {
     success: 'badge-success',

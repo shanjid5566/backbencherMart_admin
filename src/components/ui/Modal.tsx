@@ -2,6 +2,14 @@ import { Fragment, ReactNode } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { X } from 'lucide-react'
 
+interface ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  title?: string
+  children: ReactNode
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+}
+
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) => {
   const sizes = {
     sm: 'max-w-md',

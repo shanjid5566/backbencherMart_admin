@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Bell, Moon, Sun, LogOut, Menu } from "lucide-react";
+import { Bell, Moon, Sun, LogOut, Menu } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { toggleTheme } from "../../store/slices/themeSlice";
 import { toggleSidebar } from "../../store/slices/uiSlice";
@@ -83,9 +83,6 @@ const Header = () => {
                       }`}
                     >
                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {notification.title}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {notification.message}
                       </p>
                     </div>

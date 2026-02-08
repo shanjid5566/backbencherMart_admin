@@ -151,7 +151,9 @@ const OrdersList = () => {
                       <div className="flex items-center gap-2">
                         <Select
                           value={order.status}
-                          onChange={async (event: ChangeEvent<HTMLSelectElement>) => {
+                          onChange={async (
+                            event: ChangeEvent<HTMLSelectElement>,
+                          ) => {
                             try {
                               await updateOrderStatus({
                                 orderId: order._id,

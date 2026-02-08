@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
 import Button from "../../components/ui/Button";
@@ -16,6 +16,16 @@ import {
   useDeleteUserMutation,
   useGetUsersQuery,
 } from "../../store/users/usersApi";
+
+type ApiUser = {
+  id: string;
+  firstName: string;
+  lastName?: string;
+  email: string;
+  role: string;
+  isVerified: boolean;
+  createdAt: string;
+};
 
 const UsersList = () => {
   const [page, setPage] = useState(1);
@@ -40,8 +50,8 @@ const UsersList = () => {
   const total = data?.pagination?.total ?? 0;
   const totalPages = data?.pagination?.pages ?? 1;
 
-  const apiUsers = useMemo(() => {
-    return (data?.users || []).map((user) => ({
+  const apiUsers = useMemo<User[]>(() => {
+    return (data?.users || []).map((user: ApiUser) => ({
       _id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -54,7 +64,7 @@ const UsersList = () => {
 
   const currentPage = Math.min(page, totalPages);
 
-  const handleEdit = (user) => {
+  const handleEdit = (user: User) => {
     setSelectedUser(user);
     setIsUserModalOpen(true);
   };
@@ -73,12 +83,12 @@ const UsersList = () => {
     }
   };
 
-  const confirmDelete = (userId) => {
+  const confirmDelete = (userId: string) => {
     setUserToDelete(userId);
     setDeleteModalOpen(true);
   };
 
-  const getRoleBadgeVariant = (role) => {
+  const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case "admin":
         return "danger";
@@ -117,8 +127,8 @@ const UsersList = () => {
             <Input
               placeholder="Search by name or email..."
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                setSearch(event.target.value);
                 setPage(1);
               }}
               className="w-full"
@@ -126,8 +136,8 @@ const UsersList = () => {
           </div>
           <Select
             value={roleFilter}
-            onChange={(e) => {
-              setRoleFilter(e.target.value);
+            onChange={(event: ChangeEvent<HTMLSelectElement>) => {
+              setRoleFilter(event.target.value);
               setPage(1);
             }}
             options={[
@@ -138,8 +148,8 @@ const UsersList = () => {
           />
           <Select
             value={verifiedFilter}
-            onChange={(e) => {
-              setVerifiedFilter(e.target.value);
+            onChange={(event: ChangeEvent<HTMLSelectElement>) => {
+              setVerifiedFilter(event.target.value);
               setPage(1);
             }}
             options={[

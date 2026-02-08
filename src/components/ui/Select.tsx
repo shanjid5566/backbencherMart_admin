@@ -1,13 +1,13 @@
-import { SelectHTMLAttributes, forwardRef } from 'react'
+import { SelectHTMLAttributes, forwardRef } from "react";
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string
-  error?: string
-  options: { value: string | number; label: string }[]
+  label?: string;
+  error?: string;
+  options: { value: string | number; label: string }[];
 }
 
-const Select = forwardRef(
-  ({ label, error, options, className = '', ...props }, ref) => {
+const Select = forwardRef<HTMLSelectElement, SelectProps>(
+  ({ label, error, options, className = "", ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (
@@ -18,7 +18,7 @@ const Select = forwardRef(
         )}
         <select
           ref={ref}
-          className={`input-field ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`}
+          className={`input-field ${error ? "border-red-500 focus:ring-red-500" : ""} ${className}`}
           {...props}
         >
           <option value="">Select an option</option>
@@ -32,11 +32,10 @@ const Select = forwardRef(
           <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
         )}
       </div>
-    )
-  }
-)
+    );
+  },
+);
 
-Select.displayName = 'Select'
+Select.displayName = "Select";
 
-export default Select
-
+export default Select;

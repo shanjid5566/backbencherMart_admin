@@ -20,7 +20,10 @@ export const formatDate = (
 ): string => {
   const dateObj = typeof date === "string" ? new Date(date) : date;
 
-  const options: Intl.DateTimeFormatOptions = {
+  const optionsMap: Record<
+    "short" | "medium" | "long",
+    Intl.DateTimeFormatOptions
+  > = {
     short: { month: "short", day: "numeric", year: "numeric" },
     medium: {
       month: "short",
@@ -36,7 +39,8 @@ export const formatDate = (
       hour: "2-digit",
       minute: "2-digit",
     },
-  }[format];
+  };
+  const options = optionsMap[format];
 
   return new Intl.DateTimeFormat("en-US", options).format(dateObj);
 };

@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosHeaders, AxiosRequestConfig } from "axios";
 import type { BaseQueryFn } from "@reduxjs/toolkit/query";
 
 const API_BASE_URL =
@@ -11,10 +11,17 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("authToken");
   if (token) {
-    config.headers = {
-      ...config.headers,
-      authorization: `Bearer ${token}`,
-    };
+    if (!config.headers) {
+      config.headers = new AxiosHeaders();
+    }
+    if (config.headers instanceof AxiosHeaders) {
+      config.headers.set("Authorization", `Bearer ${token}`);
+    } else {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
   }
   return config;
 });

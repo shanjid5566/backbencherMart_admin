@@ -1,8 +1,10 @@
 import axios, { AxiosError, AxiosHeaders, AxiosRequestConfig } from "axios";
 import type { BaseQueryFn } from "@reduxjs/toolkit/query";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ??
+  "https://e-commerce-app-umber-two.vercel.app/api"
+).replace(/\/+$/, "");
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
